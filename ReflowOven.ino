@@ -4,43 +4,135 @@
  */
 
 #include "RTDSensor.h"
+#include "Heating.h"
+#include "Led.h"
+#include "Bounce2.h"
 
 #define BAUD_RATE 9600        // 9600 bps  57600 bps 115200 bps
 
+#define STATE_INACTIVE 0
+#define STATE_PRE_HEATING 1
+#define STATE_SOAKING 2
+#define STATE_SOLDERING 3
+#define STATE_COOLING_DOWN 4
+
+Led Led1(3);
+Led Led2(4);
+Led Led3(5);
+
+Bounce button;
+
 RTDSensor rtdSensor;
+Heating heating;
+int8_t state;
+unsigned long stateChangeTime[5];
+unsigned long lastHeatingUpdate;
+int temperatureHistory[100];
+uint8_t historyPosition = 0;
 
 void setup()
 {
-   //pinMode(5, OUTPUT);             // LED pin 5
-   DDRD = (1<<PD3) | (1<<PD4) | (1<<PD5);      // LED output
+   state = STATE_INACTIVE;
+   lastHeatingUpdate = 0;
+   //initialize temperature history
+   for(uint8_t i=0;i<100;++i) {
+       temperatureHistory[i] = 55;
+   }
+   pinMode(2, INPUT_PULLUP);       // Button on PD2
+   button.attach(2);
    rtdSensor.attach(A0);
+   heating.attach(10);             // TODO: check pin number!
    Serial.begin(BAUD_RATE);        // opens serial port
    Serial.setTimeout(20);          // Timeout for serial reading step
-   PORTD |= (1<<PD5);
-   /*PORTD &= ~(1<<PD5);
-   delay(500);
-   PORTD |= (1<<PD5);
-   delay(500);
-   PORTD &= ~(1<<PD5);
-   delay(500);
-   PORTD |= (1<<PD5);*/
-   /*digitalWrite(5, LOW);
-   delay(500);
-   digitalWrite(5, HIGH);
-   delay(500);
-   digitalWrite(5, LOW);
-   delay(500);
-   digitalWrite(5, HIGH);*/
 }
 
 void loop()
 {
+    button.update();
+
+    if(button.rose()) {
+        if(state == STATE_INACTIVE) {
+            setState(STATE_PRE_HEATING);
+        } else {
+            setState(STATE_INACTIVE);
+        }
+    }
+
+    if(state > 0) {
+        updateHeating();
+    }
     serialEvent();
-    /*Serial.println("This is the ReflowOven Project!");
-    digitalWrite(5, HIGH);
-    delay(500);
-    digitalWrite(5, LOW);
-    delay(500);*/
+}
+
+void setState(uint8_t newState)
+{
+    if(state != newState && newState < 5) {
+        state = newState;
+        stateChangeTime[state] = millis();
+        if(state > 0) {
+            Led1.on();
+        } else {
+            Led1.off();
+        }
+    }
+}
+
+unsigned long getTimeDifference(unsigned long time1, unsigned long time2)
+{
+    if(time1 > time2) { // an overflow occured
+        return 4294967295 - time1 + time2;
+    }
+    return time2 - time1;
+}
+
+void updateHeating()
+{
+    if(getTimeDifference(lastHeatingUpdate, millis()) >= 10) {
+        lastHeatingUpdate = millis();
+
+        unsigned long elapsedTime = getTimeDifference(stateChangeTime[state-1], millis());
+        temperatureHistory[historyPosition] = rtdSensor.getTemperature();
+        switch (state) {
+            case STATE_PRE_HEATING:
+                if(rtdSensor.getTemperature() < 180) {
+                    int8_t dTemperature = rtdSensor.getTemperature() - ((historyPosition == 99) ? temperatureHistory[0] : temperatureHistory[historyPosition+1]);
+                    if(dTemperature < 2) { // deltaT = 2 °C
+                        heating.increasePower();
+                    } else if(dTemperature > 18) {
+                        heating.decreasePower();
+                    }
+                    break;
+                }
+                setState(STATE_SOAKING);
+                heating.setPower(Heating::MAX_POWER/2);
+                // no break! fall trough to the next state
+            case STATE_SOAKING:
+                if(getTimeDifference(stateChangeTime[STATE_PRE_HEATING], millis()) < 40000) {
+                    // TODO: hold the temperature at 180°C ...
+                    break;
+                }
+                setState(STATE_SOLDERING);
+                // no break! fall trough to the next state
+            case STATE_SOLDERING:
+                if(rtdSensor.getTemperature() < 210) {
+                    heating.setPower(Heating::MAX_POWER);
+                    break;
+                }
+                setState(STATE_COOLING_DOWN);
+                // no break! fall trough to the next state
+            case STATE_COOLING_DOWN:
+                if(rtdSensor.getTemperature() < 150) {
+                    setState(STATE_INACTIVE);
+                }
+                heating.setPower(0);
+                break;
+        }
+        if(historyPosition == 99) {
+            historyPosition = 0;
+        } else {
+            ++historyPosition;
+        }
+    }
 }
 
 void serialEvent()
