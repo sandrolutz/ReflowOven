@@ -13,6 +13,7 @@ void Heating::attach(int pin)
     power = 0;
     this->pin = pin;
     pinMode(pin, OUTPUT);
+    digitalWrite(pin, HIGH);
 
     // Timer2
     // Prescaler: 256, OCR2 = 156.25
@@ -68,9 +69,9 @@ ISR(TIMER2_COMP_vect)
     }
 
     if(heating.counter < heating.power) {
-        digitalWrite(heating.pin, HIGH);
-    } else {
         digitalWrite(heating.pin, LOW);
+    } else {
+        digitalWrite(heating.pin, HIGH);
     }
     if(heating.counter == Heating::MAX_POWER-1) {
         heating.counter = 0;
