@@ -7,7 +7,7 @@
 #ifndef BUTTON_h
 #define BUTTON_h
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "Utils.h"
 
 #ifndef BUTTON_INTERVAL

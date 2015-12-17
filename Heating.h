@@ -7,7 +7,7 @@
 #ifndef HEATING
 #define HEATING
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <avr/interrupt.h>
 
 extern "C" void TIMER2_COMP_vect(void) __attribute__ ((signal));

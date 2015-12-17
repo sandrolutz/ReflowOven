@@ -4,20 +4,26 @@
  * Author:  Sandro Lutz
  */
 
-#ifndef LED
-#define LED
+#ifndef LED_h
+#define LED_h
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include "Utils.h"
 
 class Led
 {
 public:
-    Led(int pin);
+    Led(uint8_t pin);
     void on();
     void off();
     void toggle();
+    void setPattern(unsigned int onTime, unsigned int offTime);
+    void update();
 private:
-    int pin;
+    uint8_t _pin;
+    unsigned int _onTime;
+    unsigned int _offTime;
+    unsigned long _changeTime;
 };
 
 #endif
