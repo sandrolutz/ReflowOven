@@ -16,7 +16,6 @@
 #define STATE_SOAKING 2
 #define STATE_SOLDERING 3
 #define STATE_COOLING_DOWN 4
-#define STATE_HEATING_TEST 5
 
 Led Led1(3);
 Led Led2(4);
@@ -33,7 +32,7 @@ uint8_t historyPosition = 0;
 uint8_t state;
 
 void setState(int newState) {
-    if (state != newState && newState < 6) {
+    if (state != newState && newState < 5) {
         state = newState;
         stateChangeTime[state] = millis();
         if (state > 0) {
@@ -47,15 +46,12 @@ void setState(int newState) {
 }
 
 void updateHeating() {
-    if (getTimeDifference(lastHeatingUpdate, millis()) >= 10) {
+    if (getTimeDifference(lastHeatingUpdate, millis()) > 99) {
         lastHeatingUpdate = millis();
 
         unsigned long elapsedTime = getTimeDifference(stateChangeTime[state - 1], millis());
         temperatureHistory[historyPosition] = rtdSensor.getTemperature();
         switch (state) {
-            case STATE_HEATING_TEST:
-                heating.setPower(3);
-                break;
             case STATE_PRE_HEATING:
                 if (rtdSensor.getTemperature() < 180) {
                     int8_t dTemperature = rtdSensor.getTemperature() -
@@ -72,7 +68,7 @@ void updateHeating() {
                 heating.setPower(Heating::MAX_POWER / 2);
                 // no break! fall trough to the next state
             case STATE_SOAKING:
-                if (getTimeDifference(stateChangeTime[STATE_PRE_HEATING], millis()) < 40000) {
+                if (getTimeDifference(stateChangeTime[STATE_SOAKING], millis()) < 40000) {
                     // TODO: hold the temperature at 180°C ...
                     break;
                 }
@@ -132,11 +128,14 @@ void loop() {
     button.update();
     if (button.released()) {
         if (state == STATE_INACTIVE) {
-            setState(STATE_HEATING_TEST);
+            setState(STATE_PRE_HEATING);
         } else {
             setState(STATE_INACTIVE);
         }
     }
     updateHeating();
     serialEvent();
+    Led1.update();
+    Led2.update();
+    Led3.update();
 }
