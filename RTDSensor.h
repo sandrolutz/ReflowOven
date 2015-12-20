@@ -7,7 +7,6 @@
 #ifndef RTD_SENSOR
 #define RTD_SENSOR
 
-#include "Arduino.h"
 #include <avr/interrupt.h>
 
 extern "C" void ADC_vect(void) __attribute__ ((signal));
@@ -19,8 +18,10 @@ public:
     void attach(int analogPin);
     int getTemperature();
 protected:
+    bool updated;
+    uint8_t position;
     int temperature;
-    long voltage;
+    long voltage[3];
 };
 
 extern RTDSensor rtdSensor;

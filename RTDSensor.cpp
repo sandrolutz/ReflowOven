@@ -13,17 +13,18 @@ void RTDSensor::attach(int analogPin)
     ADCSR = (1<<ADEN)  | (1<<ADIE)  | (1<<ADFR)
           | (1<<ADPS2) | (1<<ADPS1) | (1<<ADSC);        // enables ADC with prescaler 64 and activates interrupt
     sei();
+    position = 0;
 }
 
 int RTDSensor::getTemperature()
 {
-    if(temperature == 0) {
+    if(updated) {
+        long meanVoltage = (voltage[0] + voltage[1] + voltage[2]) / 3;
         // calculate temperature
-        //long voltage = ((((long)analogRead(analogPin))*302)/1000) + 541;
-        long resistance = (((long)voltage)*10000) / (5000 - voltage);   // resistance in Ohm
+        long resistance = ((meanVoltage)*10000) / (5000 - meanVoltage);   // resistance in Ohm
 
         // formula: T=(R/1000-1)/alpha
-        if(resistance < 1385) {                    // < 100 °C
+        if(resistance < 1385) {                           // < 100 °C
             temperature = (resistance-1000)*100/385;      // alpha = 0.00385
         } else if(resistance < 1573) {                    // < 150 °C
             temperature = (resistance-1000)*10/38;        // alpha = 0.00380
@@ -34,6 +35,12 @@ int RTDSensor::getTemperature()
         } else {                                          // > 250 °C
             temperature = (resistance-1000)*100/373;      // alpha = 0.00373
         }
+        if(position < 2) {
+            ++position;
+        } else {
+            position = 0;
+        }
+        updated = false;
     }
     return temperature;
 }
@@ -43,7 +50,6 @@ int RTDSensor::getTemperature()
  */
 ISR(ADC_vect)
 {
-    rtdSensor.voltage = ((((long)ADC)*302)/1000) + 541;
-    rtdSensor.temperature = 0;
-    PORTD ^= (1<<PD5);
+    rtdSensor.voltage[rtdSensor.position] = ((((long)ADC)*302)/1000) + 541;
+    rtdSensor.updated = true;
 }

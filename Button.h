@@ -23,10 +23,7 @@ public:
     bool changed();
     bool down();
     bool up();
-    /**
-     * returns true - button state has changed; false - otherwise
-     */
-    bool update();
+    bool update(); // returns true - button state has changed; false - otherwise
 private:
     uint8_t pin;
     uint8_t state;
