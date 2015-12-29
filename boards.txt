@@ -1,4 +1,4 @@
-# See: http://code.google.com/p/arduino/wiki/Platforms
+﻿# See: http://code.google.com/p/arduino/wiki/Platforms
 
 menu.cpu=Processor
 
@@ -27,8 +27,8 @@ reflowctrl.menu.cpu.atmega8=ATmega8
 reflowctrl.menu.cpu.atmega8.upload.maximum_size=7168
 reflowctrl.menu.cpu.atmega8.upload.maximum_data_size=1024
 
-reflowctrl.menu.cpu.atmega8.bootloader.low_fuses=0xe4
-reflowctrl.menu.cpu.atmega8.bootloader.high_fuses=0xca
+reflowctrl.menu.cpu.atmega8.bootloader.low_fuses=0x24
+reflowctrl.menu.cpu.atmega8.bootloader.high_fuses=0xcb
 reflowctrl.menu.cpu.atmega8.bootloader.file=atmega8/ATmegaBOOT-prod-firmware-2009-11-07.hex
 
 reflowctrl.menu.cpu.atmega8.build.mcu=atmega8

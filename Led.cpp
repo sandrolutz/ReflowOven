@@ -18,6 +18,7 @@ void Led::on()
     _onTime = 0;
     _offTime = 0;
     digitalWrite(_pin, LOW);
+    _changeTime = millis();
 }
 
 void Led::off()
@@ -25,6 +26,7 @@ void Led::off()
     _onTime = 0;
     _offTime = 0;
     digitalWrite(_pin, HIGH);
+    _changeTime = millis();
 }
 
 void Led::toggle()
@@ -32,6 +34,7 @@ void Led::toggle()
     _onTime = 0;
     _offTime = 0;
     digitalWrite(_pin, !(digitalRead(_pin) & HIGH));
+    _changeTime = millis();
 }
 
 void Led::setPattern(unsigned int onTime, unsigned int offTime) {
@@ -46,14 +49,14 @@ void Led::setPattern(unsigned int onTime, unsigned int offTime) {
 }
 void Led::update() {
     if(_onTime != 0 && _offTime != 0) {
-        if (digitalRead(_pin) == HIGH) {
+        if (digitalRead(_pin) == LOW) {
             if (getTimeDifference(_changeTime, millis()) >= _onTime) {
-                digitalWrite(_pin, LOW);
+                digitalWrite(_pin, HIGH);
                 _changeTime = millis();
             }
         } else {
             if (getTimeDifference(_changeTime, millis()) >= _offTime) {
-                digitalWrite(_pin, HIGH);
+                digitalWrite(_pin, LOW);
                 _changeTime = millis();
             }
         }

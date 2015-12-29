@@ -19,9 +19,9 @@ public:
     int getTemperature();
 protected:
     bool updated;
-    uint8_t position;
     int temperature;
-    long voltage[3];
+    int adcValue[2];
+    uint8_t filterCounter;
 };
 
 extern RTDSensor rtdSensor;

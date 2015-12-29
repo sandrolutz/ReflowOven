@@ -35,10 +35,34 @@ void setState(int newState) {
     if (state != newState && newState < 5) {
         state = newState;
         stateChangeTime[state] = millis();
-        if (state > 0) {
-            Led2.on();
-        } else {
-            Led2.off();
+        switch(state) {
+            case STATE_PRE_HEATING:
+                Led1.setPattern(200, 200);
+                Led2.off();
+                Led3.off();
+                break;
+            case STATE_SOAKING:
+                Led1.on();
+                Led2.setPattern(200, 200);
+                Led3.off();
+                break;
+            case STATE_SOLDERING:
+                Led1.on();
+                Led2.on();
+                Led3.setPattern(200, 200);
+                break;
+            case STATE_COOLING_DOWN:
+                Led1.on();
+                Led2.on();
+                Led3.on();
+                break;
+            default:
+                Led1.off();
+                Led2.off();
+                Led3.off();
+                Led1.setPattern(200, 200);
+                Led2.setPattern(200, 200);
+                Led3.setPattern(200, 200);
         }
         Serial.print("State changed to ");
         Serial.println(state);
@@ -46,10 +70,10 @@ void setState(int newState) {
 }
 
 void updateHeating() {
-    if (getTimeDifference(lastHeatingUpdate, millis()) > 99) {
+    if (getTimeDifference(lastHeatingUpdate, millis()) > 9) {
         lastHeatingUpdate = millis();
 
-        unsigned long elapsedTime = getTimeDifference(stateChangeTime[state - 1], millis());
+        unsigned long elapsedTime = getTimeDifference(stateChangeTime[state], millis());
         temperatureHistory[historyPosition] = rtdSensor.getTemperature();
         switch (state) {
             case STATE_PRE_HEATING:
@@ -104,24 +128,45 @@ void serialEvent() {
         char inChar = (char) Serial.read();
         if (inChar == '$') {
             Serial.print(rtdSensor.getTemperature());
-            Serial.println(" °C");
+            Serial.println(" degree (C)");
         }
     }
 }
 
 void setup() {
-    state = STATE_INACTIVE;
     lastHeatingUpdate = 0;
     //initialize temperature history
     for (uint8_t i = 0; i < 100; ++i) {
         temperatureHistory[i] = 55;
     }
-    //pinMode(2, INPUT_PULLUP);       // Button on PD2
     button.attach(2);
     rtdSensor.attach(A0);
     heating.attach(A5);
     Serial.begin(BAUD_RATE);        // opens serial port
     Serial.setTimeout(20);          // Timeout for serial reading step
+    // print cause of the RESET
+    if(MCUSR & (1<<WDRF)) {
+        Serial.println("RESET caused by watchdog timer");
+    } else if(MCUSR & (1<<BORF)) {
+        Serial.println("RESET caused by brown-out detector");
+    } else if(MCUSR & (1<<EXTRF)) {
+        Serial.println("RESET caused by external reset on RESET pin");
+    } else if(MCUSR & (1<<PORF)) {
+        Serial.println("RESET caused by power on");
+    }
+    MCUSR = 0x00;
+    Led1.on();
+    delay(300);
+    Led1.off();
+    Led2.on();
+    delay(300);
+    Led2.off();
+    Led3.on();
+    delay(300);
+    Led3.off();
+    Serial.println("ReflowOven initialized...");
+    state = 5;
+    setState(STATE_INACTIVE);
 }
 
 void loop() {

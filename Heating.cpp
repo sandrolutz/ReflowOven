@@ -27,14 +27,12 @@ void Heating::attach(int pin)
 void Heating::increasePower() {
     if(this->power < this->MAX_POWER) {
         ++this->power;
-        this->counter = 0;
     }
 }
 
 void Heating::decreasePower() {
     if(this->power > 0) {
         --this->power;
-        this->counter = 0;
     }
 }
 
@@ -45,7 +43,6 @@ void Heating::setPower(uint8_t power)
 
     if(this->power != power) {
         this->power = power;
-        this->counter = 0;
     }
 }
 
