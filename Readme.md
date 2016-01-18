@@ -12,7 +12,8 @@ This code is for board versions **1.***
 
    Max OS X: ```/Applications/Arduino/Contents/java/hardware/arduino/avr/boards.txt```
    
-   ```reflowctrl.name=ReflowCtrl
+   ```
+   reflowctrl.name=ReflowCtrl
    reflowctrl.build.mcu=atmega8
    reflowctrl.build.f_cpu=8000000L
    reflowctrl.build.board=AVR_NG
