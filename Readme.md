@@ -5,7 +5,7 @@ This code is for board versions **1.***
 
 ## Setup
 
-1. Install the Arduino IDE (See www.arduinon.cc)
+1. Install the Arduino IDE (See www.arduino.cc)
 2. Append the following text to
  
    Windows:  ```<Arduino Installation>/hardware/arduino/avr/boards.txt```
