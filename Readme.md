@@ -7,8 +7,10 @@ This code is for board versions **1.***
 
 1. Install the Arduino IDE (See www.arduinon.cc)
 2. Append the following text to
-   Windows:  <Arduino Installation>/hardware/arduino/avr/boards.txt
-   Max OS X: /Applications/Arduino/Contents/java/hardware/arduino/avr/boards.txt
+ 
+   Windows:  ```<Arduino Installation>/hardware/arduino/avr/boards.txt```
+
+   Max OS X: ```/Applications/Arduino/Contents/java/hardware/arduino/avr/boards.txt```
    
    ```reflowctrl.name=ReflowCtrl
    reflowctrl.build.mcu=atmega8
