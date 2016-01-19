@@ -10,7 +10,7 @@ This code is for board versions **1.***
  
    Windows:  ```<Arduino Installation>/hardware/arduino/avr/boards.txt```
 
-   Max OS X: ```/Applications/Arduino/Contents/java/hardware/arduino/avr/boards.txt```
+   Mac OS X: ```/Applications/Arduino/Contents/java/hardware/arduino/avr/boards.txt```
    
    ```
    reflowctrl.name=ReflowCtrl
